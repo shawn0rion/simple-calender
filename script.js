@@ -1,6 +1,6 @@
 const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-
+const years = [];
 class Year{
     constructor(year){
         this.year = year;
@@ -113,12 +113,14 @@ const loadDate = {
 window.addEventListener('DOMContentLoaded', () => {
     const d = new Date();
     
+    // variables are idx's. example: month of may = 4
     loadDate.year = d.getFullYear();
-    loadDate.month = months[d.getMonth()];
+    loadDate.month = d.getMonth();
     loadDate.date = d.getDate();
-    loadDate.day = days[d.getDay()];
-    const year = new Year(loadDate.year - 1);
+    loadDate.day = d.getDay();
+    const year = new Year(loadDate.year);
     console.log(year);
+    renderCalender(year, year.months[loadDate.month])
  })
 
  // TODO: update this using class data
@@ -142,4 +144,43 @@ function getCalenderDates(year, month){
 
     }
     return dates;
+}
+
+
+
+// TODO: handle new year and add events to month btns for clear and render Calender 
+function renderCalender(year, month){
+    const monthYearElement = document.querySelector('.month-year');
+    monthYearElement.textContent = `${month.month} ${year.year}`;
+    const dayElements = document.querySelectorAll('.day');
+    dayElements.forEach((day, idx) => {
+        day.textContent = days[idx][0];
+    })
+    const dateElements = document.querySelectorAll('.date');
+    const monthIdx = year.months.indexOf(month);
+    const lastMonth = year.months[monthIdx - 1];
+    const nextMonth = year.months[monthIdx + 1];
+    dateElements.forEach((dateElement, idx) => {
+        let dateNumber = '';
+        let dayObject = '';
+        if (idx < month.firstDayOfMonth){
+            dateNumber = lastMonth.numDays - (month.firstDayOfMonth + idx) + 1;
+            dayObject = lastMonth.days.filter(day => day.date === dateNumber);
+        } else if (idx < month.numDays + month.firstDayOfMonth){
+            dateNumber = idx - month.firstDayOfMonth + 1;
+            dayObject = month.days.filter(day => day.date === dateNumber);
+        } else{
+            dateNumber = idx - month.numDays - month.firstDayOfMonth + 1;
+            dayObject = nextMonth.days.filter(day => day.date === dateNumber);
+        }
+        dateElement.textContent = dateNumber;
+        dateElement.addEventListener('click', event=> {
+            // console.log(event.target)
+            renderDay(dayObject);
+        })
+    })
+
+}
+function renderDay(dayObject){
+    console.log(dayObject)
 }

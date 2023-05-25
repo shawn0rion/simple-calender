@@ -1,0 +1,41 @@
+.container{
+    height: 100%;
+}
+
+.calender {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 280px;
+    padding: 20px;
+}
+
+.calender .header{
+    width: 100%;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.month-btn{
+    cursor: pointer;
+}
+
+.month-grid{
+    margin: auto;
+    display: grid;
+    grid-template-columns: repeat(7, 30px);
+    grid-template-rows: repeat(6, 30px);
+    row-gap: 10px;
+    column-gap: 10px;
+}
+
+.day,
+.date{
+    background-color: #444;
+    border-radius: 50%;
+    height: 100%;
+    width: 100%;
+    color: #fff;
+    cursor: pointer;
+}
