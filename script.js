@@ -159,7 +159,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const month = year.months[loadDate.month];
     const day = month.days[loadDate.date - 1]
     updateCalenderDate(day, loadDate.date, month, year);
-    renderCalender(year, year.months[loadDate.month])
+    renderCalender('.one', year, year.months[loadDate.month])
  })
 
  function updateCalenderDate(day='', date='', month='', year=''){
@@ -196,15 +196,16 @@ function getCalenderDates(year, month){
 
 
 // TODO: handle new year and add events to month btns for clear and render Calender 
-function renderCalender(year, month){
+function renderCalender(calenderPosition,year, month){
+    const calender = document.querySelector('.calender'+calenderPosition);
     console.log('rendering', month.month  + ' ' + year.year)
-    const monthYearElement = document.querySelector('.month-year');
+    const monthYearElement = calender.querySelector('.month-year');
     monthYearElement.textContent = `${month.month} ${year.year}`;
-    const dayElements = document.querySelectorAll('.day');
+    const dayElements = calender.querySelectorAll('.day');
     dayElements.forEach((day, idx) => {
         day.textContent = days[idx][0];
     })
-    const dateElements = document.querySelectorAll('.date');
+    const dateElements = calender.querySelectorAll('.date');
 
 
     const monthIdx = month.monthIdx;
@@ -225,6 +226,7 @@ function renderCalender(year, month){
         if (idx < month.firstDayOfMonth){
             dateNumber = lastMonth.numDays - (month.firstDayOfMonth + idx) + 1;
             dayObject = lastMonth.days.filter(day => day.date === dateNumber);
+            dateElement.classList.add('out-of-month')
         // this month
         } else if (idx < month.numDays + month.firstDayOfMonth){
             dateNumber = idx - month.firstDayOfMonth + 1;
@@ -233,11 +235,16 @@ function renderCalender(year, month){
         } else{
             dateNumber = idx - month.numDays - month.firstDayOfMonth + 1;
             dayObject = nextMonth.days.filter(day => day.date === dateNumber);
+            dateElement.classList.add('out-of-month')
         }
         dateElement.textContent = dateNumber;
         dateElement.addEventListener('click', event=> {
             // console.log(event.target)
             renderDay(dayObject);
+            dateElements.forEach(dateElement => {
+                dateElement.classList.remove('active');
+            })
+            dateElement.classList.add('active')
         })
     })
 
@@ -249,26 +256,50 @@ function renderDay(dayObject){
 
 
 // change month events
-const nextMonthBtn = document.querySelector('#next');
-const prevMonthBtn = document.querySelector('#prev');
-nextMonthBtn.addEventListener('click', event => {
-    // change month
-    const currentMonthIdx = calenderDate.month.monthIdx;
-    let nextMonthIdx = currentMonthIdx + 1;
-    // handle last month, make new year
-    if (currentMonthIdx == 10){
-        calenderDate.year.getNextYear()
-          // handle new year
-    } else if (currentMonthIdx == 11){
-        calenderDate.year = years[years.length - 1];
-        nextMonthIdx = 0;
-    }
-    calenderDate.month = calenderDate.year.months[nextMonthIdx];
+const nextMonthBtns = document.querySelectorAll('.next');
+const prevMonthBtns = document.querySelectorAll('.prev');
 
-    renderCalender(calenderDate.year, calenderDate.month)
+nextMonthBtns.forEach(btn => {
+    btn.addEventListener('click', event => {
+        // disable click for 1s to prevent animation problems
+        
+        nextMonthBtns.forEach(btn2 => {
+            btn2.disabled = true;
+            setTimeout(() => {
+                btn2.disabled =false;
+            }, 1000)
+        })
+        event.target.blur();
+        const currentMonthIdx = calenderDate.month.monthIdx;
+        let nextMonthIdx = currentMonthIdx + 1;
+        // handle last month, make new year
+        if (currentMonthIdx == 10){
+            calenderDate.year.getNextYear()
+            // handle new year
+        } else if (currentMonthIdx == 11){
+            calenderDate.year = years[years.length - 1];
+            nextMonthIdx = 0;
+        }
+        calenderDate.month = calenderDate.year.months[nextMonthIdx];
+
+        renderCalender('.two', calenderDate.year, calenderDate.month)
+        shiftBoxes();
+
+    })
+
+
 })
+prevMonthBtns.forEach(btn => {
+    btn.addEventListener('click', event => {
+     // disable click for 1s to prevent animation problems
 
-prevMonthBtn.addEventListener('click', event => {
+    prevMonthBtns.forEach(btn2 => {
+        btn2.disabled = true;
+        setTimeout(() => {
+            btn2.disabled =false;
+        }, 1000)
+    })
+    event.target.blur();
     const currentMonthIdx = calenderDate.month.monthIdx;
     let prevMonthIdx = currentMonthIdx-1;
     if (currentMonthIdx == 1){
@@ -278,5 +309,57 @@ prevMonthBtn.addEventListener('click', event => {
         prevMonthIdx = 11;
     }
     calenderDate.month = calenderDate.year.months[prevMonthIdx];
-    renderCalender(calenderDate.year, calenderDate.month)
+    renderCalender('.four', calenderDate.year, calenderDate.month)
+    unshiftBoxes();
+
 })
+
+})
+function shiftBoxes(){
+    const one = document.querySelector('.one');
+    const two = document.querySelector('.two');
+    const three = document.querySelector('.three');
+    const four = document.querySelector('.four')
+    one.classList.add('to-left');
+    setTimeout(() => {
+
+        one.classList.remove('to-left');
+        one.classList.remove('one')
+        one.classList.add('four');
+    }, 300);
+    two.classList.add('one');
+    two.classList.remove('two');
+    three.classList.add('two');
+    three.classList.remove('three');
+    four.classList.add('three');
+    four.classList.remove('four');
+    // one.id = '';
+    // two.id = '';
+    // three.id = '';
+    // one.id = 'three';
+    // two.id = 'one';
+    // three.id = 'two';
+}
+
+function unshiftBoxes(){
+        const one = document.querySelector('.one');
+    const two = document.querySelector('.two');
+    const three = document.querySelector('.three');
+    const four = document.querySelector('.four')
+    four.classList.add('to-left');
+    four.classList.add('one');
+    four.classList.remove('four');
+    four.classList.remove('calender')
+    setTimeout(() => {
+        four.classList.remove('to-left')
+        four.classList.add('calender')
+
+    },100)
+    one.classList.add('two');
+    one.classList.remove('one');
+    two.classList.add('three');
+    two.classList.remove('two');
+    three.classList.add('four');
+    three.classList.remove('three');
+
+}
