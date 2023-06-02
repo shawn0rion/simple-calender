@@ -1,7 +1,13 @@
+
 const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 const years = [];
 const numCalenderWeeks = 6;
+const calenderDate = {
+    day: '',
+    month: '',
+    year: '', 
+}
  
 class Year{
     constructor(year){
@@ -19,10 +25,26 @@ class Year{
         }
         return months;
     }
+    getPrevYear(){
+        // do nothing if year exists
+        if (years.find(year => year.year == this.year - 1) === undefined){
+            years.unshift(new Year(this.year - 1))
+        }
+    }
+
+    getNextYear(){
+        // do nothing if year exists
+        if (years.find(year => year.year == this.year + 1) === undefined){
+            years.push(new Year(this.year + 1))
+        }
+    }
+
+
 }
 
 class Month {
     constructor(monthIdx, year){
+        this.monthIdx = monthIdx;
         this.month = months[monthIdx];
         this.firstDayOfMonth = this.getFirstDayOfMonth(year);
         this.numDays = this.getNumDays(year);
@@ -55,6 +77,16 @@ class Month {
         }
         return days;
     }
+
+    getDay(date){
+        console.log(date)
+        return this.days[date-1];
+    }
+
+    getDate(date){
+        return this.days[date-1];
+    }
+
 }
 
 class Day {
@@ -120,10 +152,22 @@ window.addEventListener('DOMContentLoaded', () => {
     loadDate.month = d.getMonth();
     loadDate.date = d.getDate();
     loadDate.day = d.getDay();
+    // trickle down and create month, date, day for this year
     const year = new Year(loadDate.year);
-    console.log(year);
+    years.push(year);
+
+    const month = year.months[loadDate.month];
+    const day = month.days[loadDate.date - 1]
+    updateCalenderDate(day, loadDate.date, month, year);
     renderCalender(year, year.months[loadDate.month])
  })
+
+ function updateCalenderDate(day='', date='', month='', year=''){
+    calenderDate.day = day;
+    calenderDate.date = date;
+    calenderDate.month = month;
+    calenderDate.year = year;
+ }
 
  // TODO: update this using class data
  // purpose: log the days of a monthly calender which shows numCalenderWeeks full weeks
@@ -150,8 +194,10 @@ function getCalenderDates(year, month){
 
 
 
+
 // TODO: handle new year and add events to month btns for clear and render Calender 
 function renderCalender(year, month){
+    console.log('rendering', month.month  + ' ' + year.year)
     const monthYearElement = document.querySelector('.month-year');
     monthYearElement.textContent = `${month.month} ${year.year}`;
     const dayElements = document.querySelectorAll('.day');
@@ -159,20 +205,31 @@ function renderCalender(year, month){
         day.textContent = days[idx][0];
     })
     const dateElements = document.querySelectorAll('.date');
-    console.log(dateElements)
 
-    const monthIdx = year.months.indexOf(month);
-    const lastMonth = year.months[monthIdx - 1];
-    const nextMonth = year.months[monthIdx + 1];
+
+    const monthIdx = month.monthIdx;
+    // handle prev month in prev year and get last month
+    const lastMonth = monthIdx == 0 ? years[0].months[11] : year.months[monthIdx - 1]
+    // handle next month in next year and get next month
+    if (monthIdx == 11){
+        console.log(monthIdx);
+        console.log(years[years.length - 1].months[0])
+    
+    }
+    const nextMonth = monthIdx == 11 ? years[years.length - 1].months[0] : year.months[monthIdx + 1];
+    // render each dateElement's text, and render each Day on date click
     dateElements.forEach((dateElement, idx) => {
         let dateNumber = '';
         let dayObject = '';
+        // prev month
         if (idx < month.firstDayOfMonth){
             dateNumber = lastMonth.numDays - (month.firstDayOfMonth + idx) + 1;
             dayObject = lastMonth.days.filter(day => day.date === dateNumber);
+        // this month
         } else if (idx < month.numDays + month.firstDayOfMonth){
             dateNumber = idx - month.firstDayOfMonth + 1;
             dayObject = month.days.filter(day => day.date === dateNumber);
+        // next month
         } else{
             dateNumber = idx - month.numDays - month.firstDayOfMonth + 1;
             dayObject = nextMonth.days.filter(day => day.date === dateNumber);
@@ -185,6 +242,41 @@ function renderCalender(year, month){
     })
 
 }
+
 function renderDay(dayObject){
     console.log(dayObject)
 }
+
+
+// change month events
+const nextMonthBtn = document.querySelector('#next');
+const prevMonthBtn = document.querySelector('#prev');
+nextMonthBtn.addEventListener('click', event => {
+    // change month
+    const currentMonthIdx = calenderDate.month.monthIdx;
+    let nextMonthIdx = currentMonthIdx + 1;
+    // handle last month, make new year
+    if (currentMonthIdx == 10){
+        calenderDate.year.getNextYear()
+          // handle new year
+    } else if (currentMonthIdx == 11){
+        calenderDate.year = years[years.length - 1];
+        nextMonthIdx = 0;
+    }
+    calenderDate.month = calenderDate.year.months[nextMonthIdx];
+
+    renderCalender(calenderDate.year, calenderDate.month)
+})
+
+prevMonthBtn.addEventListener('click', event => {
+    const currentMonthIdx = calenderDate.month.monthIdx;
+    let prevMonthIdx = currentMonthIdx-1;
+    if (currentMonthIdx == 1){
+        calenderDate.year.getPrevYear();
+    } else if (currentMonthIdx == 0){
+        calenderDate.year = years[0];
+        prevMonthIdx = 11;
+    }
+    calenderDate.month = calenderDate.year.months[prevMonthIdx];
+    renderCalender(calenderDate.year, calenderDate.month)
+})
