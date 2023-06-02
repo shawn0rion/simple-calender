@@ -1,6 +1,8 @@
 const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 const years = [];
+const numCalenderWeeks = 6;
+ 
 class Year{
     constructor(year){
         this.year = year;
@@ -124,13 +126,13 @@ window.addEventListener('DOMContentLoaded', () => {
  })
 
  // TODO: update this using class data
- // purpose: log the days of a monthly calender which shows 5 full weeks
+ // purpose: log the days of a monthly calender which shows numCalenderWeeks full weeks
 function getCalenderDates(year, month){
     const dates = [];
     const prevMonthLastDate = new Date(year, month - 1, 0).getDate();
     const thisMonthLastDate = new Date(year, month + 1, 0).getDate();
     const thisMonthFirstDay = new Date(year, month).getDay();
-    for (let i = 0; i < 7 * 5; i++){
+    for (let i = 0; i < 7 * numCalenderWeeks; i++){
         if ( i < thisMonthFirstDay){
             // dates of last week of last month
             console.log(prevMonthLastDate - (thisMonthFirstDay - 1) + i)
@@ -157,6 +159,8 @@ function renderCalender(year, month){
         day.textContent = days[idx][0];
     })
     const dateElements = document.querySelectorAll('.date');
+    console.log(dateElements)
+
     const monthIdx = year.months.indexOf(month);
     const lastMonth = year.months[monthIdx - 1];
     const nextMonth = year.months[monthIdx + 1];
